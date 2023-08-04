@@ -1,6 +1,8 @@
 import pygame
 from sys import exit
 pygame.init()
+pygame.font.init()
+my_font = pygame.font.SysFont('Comic Sans MS', 30)
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 400
@@ -23,10 +25,24 @@ right_bar_surf = pygame.Surface((bar_width, bar_height))
 right_bar_rect = right_bar_surf.get_rect(topleft=(right_bar_x_cord, bar_y_cord))
 right_bar_surf.fill('red')
 
-
+ball_dims, ball_x, ball_y = 10, 400, 200
+ball_surf = pygame.Surface((ball_dims, ball_dims))
+ball_surf.fill('white')
+ball_rect = ball_surf.get_rect(center=(ball_x, ball_y))
 
 move_up = False
 move_down = False
+
+playing = False
+x_speed = -2
+y_speed = 0
+start_time = pygame.time.get_ticks() // 1000
+def display_score():
+    current_time = int(pygame.time.get_ticks()/500) - start_time
+    score_surf = my_font.render(f'{current_time}', False, (255, 255, 255))
+    score_rect = score_surf.get_rect(center=(400, 50))
+    screen.blit(score_surf, score_rect)
+
 
 while True:
 
@@ -52,12 +68,30 @@ while True:
 
     screen.blit(left_bar_surf, (left_bar_x_cord, bar_y_cord))
     screen.blit(right_bar_surf, (right_bar_x_cord, bar_y_cord))
+    screen.blit(ball_surf, (ball_x, ball_y))
     # y_cord += 1
     if move_up and bar_y_cord >= 0:
         bar_y_cord -= 4
     elif move_down and bar_y_cord <= 340:
         bar_y_cord += 4
 
+    ball_x += x_speed
+    ball_y += y_speed
+
+    if ball_x <= left_bar_x_cord:
+        x_speed = 4
+    elif ball_x >= right_bar_x_cord:
+        x_speed = -4
+        if move_down:
+            y_speed = 2
+        elif move_up:
+            y_speed = -2
+
+    if ball_y <= 0:
+        y_speed = 2
+    elif ball_y >= SCREEN_HEIGHT:
+        y_speed = -2
+    
+    display_score()
     pygame.display.update()
     clock.tick(60)
-

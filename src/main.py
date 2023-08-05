@@ -1,5 +1,6 @@
 import pygame
 from sys import exit
+
 pygame.init()
 pygame.font.init()
 my_font = pygame.font.SysFont('Comic Sans MS', 30)
@@ -32,17 +33,16 @@ ball_rect = ball_surf.get_rect(center=(ball_x, ball_y))
 
 move_up = False
 move_down = False
-
 playing = False
 x_speed = -2
 y_speed = 0
 start_time = pygame.time.get_ticks() // 1000
+
 def display_score():
     current_time = int(pygame.time.get_ticks()/500) - start_time
-    score_surf = my_font.render(f'{current_time}', False, (255, 255, 255))
+    score_surf = my_font.render(f'Score: {current_time}', False, (255, 255, 255))
     score_rect = score_surf.get_rect(center=(400, 50))
     screen.blit(score_surf, score_rect)
-
 
 while True:
 
@@ -66,32 +66,43 @@ while True:
             if event.key == pygame.K_DOWN:
                 move_down = False
 
-    screen.blit(left_bar_surf, (left_bar_x_cord, bar_y_cord))
-    screen.blit(right_bar_surf, (right_bar_x_cord, bar_y_cord))
-    screen.blit(ball_surf, (ball_x, ball_y))
+    screen.blit(left_bar_surf, left_bar_rect)
+    screen.blit(right_bar_surf, right_bar_rect)
+    screen.blit(ball_surf, ball_rect)
     # y_cord += 1
-    if move_up and bar_y_cord >= 0:
-        bar_y_cord -= 4
-    elif move_down and bar_y_cord <= 340:
-        bar_y_cord += 4
+    if move_up and left_bar_rect.y >= 0:
+        right_bar_rect.y -= 4
+        left_bar_rect.y -= 4
+    elif move_down and left_bar_rect.y <= 340:
+        left_bar_rect.y += 4
+        right_bar_rect.y += 4
 
-    ball_x += x_speed
-    ball_y += y_speed
+    ball_rect.x += x_speed
+    ball_rect.y += y_speed
+    collision = pygame.Rect.colliderect(left_bar_rect, ball_rect)
 
-    if ball_x <= left_bar_x_cord:
+    if left_bar_rect.colliderect(ball_rect):
         x_speed = 4
-    elif ball_x >= right_bar_x_cord:
+        if move_down:
+            y_speed = 2
+        if move_up:
+            y_spped = -2
+
+    elif right_bar_rect.colliderect(ball_rect):
         x_speed = -4
         if move_down:
             y_speed = 2
         elif move_up:
             y_speed = -2
+    else:
+        if ball_rect.x < left_bar_rect.x or ball_x > right_bar_rect.x:
+            print('you lost')
 
-    if ball_y <= 0:
+    if ball_rect.y <= 0:
         y_speed = 2
-    elif ball_y >= SCREEN_HEIGHT:
+    elif ball_rect.y >= SCREEN_HEIGHT:
         y_speed = -2
-    
+
     display_score()
     pygame.display.update()
     clock.tick(60)
